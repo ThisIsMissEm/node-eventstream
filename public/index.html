@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Testpage</title>
+<script type="text/javascript" src="/js/eventstream.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+  
+  var stream = new eventStream("ws://localhost:8080");
+  
+  stream.on("time", function(time){
+    console.log(time);
+  });
+</script>
+</body>
+</html>
