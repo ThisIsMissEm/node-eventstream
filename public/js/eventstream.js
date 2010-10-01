@@ -40,7 +40,7 @@
     this._socket.send(JSON.stringify({"evt": evt, "data": data}));
   };
   
-  eventStream.prototype.on = function(evt, listener){
+  eventStream.prototype.addListener = function(evt, listener){
     if ('function' !== typeof listener) {
       throw new Error('addListener only takes instances of Function');
     }
@@ -57,6 +57,32 @@
       this._events[evt] = [this._events[evt], listener];
     }
     return this;
+  };
+  
+  eventStream.prototype.on = eventStream.prototype.addListener;
+  
+  eventStream.prototype.removeListener = function(evt, listener){
+    if (!this._events || !this._events[evt]) return false;
+
+    if(listener === undefined || this._events[evt] === listener) {
+      delete this._events[evt];
+    } else {
+      if ('function' !== typeof listener) {
+        throw new Error('removeListener only takes instances of Function');
+      }
+
+      var list = this._events[evt];
+
+      if (isArray(list)) {
+        var i = list.indexOf(listener);
+        if (i > -1) {
+          list.splice(i, 1);
+          if (list.length == 0){
+            delete this._events[evt];
+          }
+        }
+      }
+    }
   };
   
   global.eventStream = eventStream;
