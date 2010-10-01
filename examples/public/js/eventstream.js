@@ -4,7 +4,7 @@
     return !!(obj && obj.concat && obj.unshift && !obj.callee);
   };
   
-  var eventStream = function(uri){
+  var eventstream = global.eventstream = function(uri){
     if( !("WebSocket" in global) ) throw new Error("No WebSocket Support");
     
     var self = this;
@@ -17,13 +17,23 @@
       self.connected = true;
     });
     
+    this._socket.addEventListener("close", function(){
+      self.connected = false;
+    });
+    
     this._socket.addEventListener("message", function(evt){
       var packet = JSON.parse(evt.data);
       self._emit(packet.evt, packet.data);
     });
   };
   
-  eventStream.prototype._emit = function(evt, data){
+  eventstream.prototype.close = function(){
+    if(this.connected) {
+      this._socket.close();
+    }
+  };
+  
+  eventstream.prototype._emit = function(evt, data){
     if (!this._events || !this._events[evt]) return false;
 
     if (typeof this._events[evt] == 'function') {
@@ -35,12 +45,12 @@
     }
   };
   
-  eventStream.prototype.emit = function(evt, data){
+  eventstream.prototype.emit = function(evt, data){
     if( ! this.connected) throw new Error("Not Connected.");
     this._socket.send(JSON.stringify({"evt": evt, "data": data}));
   };
   
-  eventStream.prototype.addListener = function(evt, listener){
+  eventstream.prototype.addListener = function(evt, listener){
     if ('function' !== typeof listener) {
       throw new Error('addListener only takes instances of Function');
     }
@@ -59,9 +69,9 @@
     return this;
   };
   
-  eventStream.prototype.on = eventStream.prototype.addListener;
+  eventstream.prototype.on = eventstream.prototype.addListener;
   
-  eventStream.prototype.removeListener = function(evt, listener){
+  eventstream.prototype.removeListener = function(evt, listener){
     if (!this._events || !this._events[evt]) return false;
 
     if(listener === undefined || this._events[evt] === listener) {
@@ -70,9 +80,8 @@
       if ('function' !== typeof listener) {
         throw new Error('removeListener only takes instances of Function');
       }
-
       var list = this._events[evt];
-
+      
       if (isArray(list)) {
         var i = list.indexOf(listener);
         if (i > -1) {
@@ -84,6 +93,4 @@
       }
     }
   };
-  
-  global.eventStream = eventStream;
 })(this);

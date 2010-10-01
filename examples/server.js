@@ -6,7 +6,7 @@ var sys = require('sys')
 
 var server = http.createServer(function(req, res) {
   paperboy
-    .deliver(path.join(path.dirname(__filename), '../public'), req, res)
+    .deliver(path.join(path.dirname(__filename), 'public'), req, res)
     .addHeader('Expires', 300)
     .addHeader('X-PaperRoute', 'Node')
     .error(function(statCode, msg) {
